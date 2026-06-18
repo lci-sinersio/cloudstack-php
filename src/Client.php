@@ -167,7 +167,7 @@ class Client extends AbstractClient
         return $this->getResponse($request);
     }
 
-    /**
+/**
      * Verifies that all required options have been passed.
      *
      * @param string $command
@@ -178,6 +178,14 @@ class Client extends AbstractClient
      */
     private function assertRequiredCommandOptions(string $command, array $options = []) : void
     {
+        // Jeśli pamięć podręczna API nie została wygenerowana, nie crashujemy aplikacji.
+        // Pomijamy lokalną walidację i pozwalamy serwerowi CloudStack obsłużyć żądanie.
+        try {
+            $this->getApiList();
+        } catch (RuntimeException $e) {
+            return;
+        }
+
         if (! $this->isCommandValid($command)) {
             throw new RuntimeException(
                 "Call to unsupported API command [{$command}], this call is not present in the API list."
