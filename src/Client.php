@@ -9,7 +9,8 @@ use InvalidArgumentException;
 use PCextreme\Cloudstack\Util\UrlHelpersTrait;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
-use Symfony\Component\Cache\Simple\FilesystemCache;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Psr16Cache;
 
 class Client extends AbstractClient
 {
@@ -66,7 +67,7 @@ class Client extends AbstractClient
     private $ssoEnabled = false;
 
     /**
-     * @var FilesystemCache
+     * @var Psr16Cache
      */
     private $cache;
 
@@ -74,13 +75,13 @@ class Client extends AbstractClient
      * Constructs a new Cloudstack client instance.
      *
      * @param  array $options
-     *     An array of options to set on this client. Options include
-     *     'apiList', 'urlApi', 'urlClient', 'urlConsole', 'apiKey',
-     *     'secretKey', 'responseError' and 'responseCode'.
+     * An array of options to set on this client. Options include
+     * 'apiList', 'urlApi', 'urlClient', 'urlConsole', 'apiKey',
+     * 'secretKey', 'responseError' and 'responseCode'.
      * @param  array $collaborators
-     *     An array of collaborators that may be used to override
-     *     this provider's default behavior. Collaborators include
-     *     `requestFactory` and `httpClient`.
+     * An array of collaborators that may be used to override
+     * this provider's default behavior. Collaborators include
+     * `requestFactory` and `httpClient`.
      */
     public function __construct(array $options = [], array $collaborators = [])
     {
@@ -411,7 +412,7 @@ class Client extends AbstractClient
      * @param  array $params
      * @return array
      */
-    protected static function flattenParams(array $params) : array
+    protected function flattenParams(array $params) : array
     {
         $result = [];
 
@@ -474,12 +475,14 @@ class Client extends AbstractClient
 
     /**
      * Get cache driver instance
-     * @return FilesystemCache
+     * @return Psr16Cache
      */
-    private function cache() : FilesystemCache
+    private function cache() : Psr16Cache
     {
         if (! isset($this->cache)) {
-            $this->cache = new FilesystemCache('', 0, __DIR__.'/../../cache');
+            $this->cache = new Psr16Cache(
+                new FilesystemAdapter('', 0, __DIR__.'/../../cache')
+            );
         }
 
         return $this->cache;
