@@ -408,7 +408,7 @@ class Client extends AbstractClient
         // compromise the signature. Therefore we can't use http_build_query().
         $queryParams = $this->flattenParams($params);
         array_walk($queryParams, function (&$value, $key) {
-            $value = $key.'='.rawurlencode($value);
+            $value = $key . '=' . rawurlencode((string)$value);
         });
 
         return implode('&', $queryParams);
